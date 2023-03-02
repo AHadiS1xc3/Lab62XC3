@@ -49,7 +49,7 @@ class RBNode:
     def __repr__(self):
          return "(" + str(self.value) + "," + self.colour + ")"
 
-    def rotate_right(self):
+    '''def rotate_right(self):
         x = self.left
         self.left = x.right
         if x.right is not None:
@@ -80,8 +80,40 @@ class RBNode:
         x.colour=self.colour
         self.colour="R"
         return x
-    
-    
+    '''
+    def LR ( self , x ) :
+        y = x.right                                      # Y = Right child of x
+        x.right = y.left                                 # Change right child of x to left child of y
+        if y.left != self.NULL :
+            y.left.parent = x
+
+        y.parent = x.parent                              # Change parent of y as parent of x
+        if x.parent == None :                            # If parent of x == None ie. root node
+            self.root = y                                # Set y as root
+        elif x == x.parent.left :
+            x.parent.left = y
+        else :
+            x.parent.right = y
+        y.left = x
+        x.parent = y
+
+
+    # Code for right rotate
+    def RR ( self , x ) :
+        y = x.left                                       # Y = Left child of x
+        x.left = y.right                                 # Change left child of x to right child of y
+        if y.right != self.NULL :
+            y.right.parent = x
+
+        y.parent = x.parent                              # Change parent of y as parent of x
+        if x.parent == None :                            # If x is root node
+            self.root = y                                # Set y as root
+        elif x == x.parent.right :
+            x.parent.right = y
+        else :
+            x.parent.left = y
+        y.right = x
+        x.parent = y
 class RBTree:
     def __init__(self):
         self.root = None
@@ -150,6 +182,7 @@ class RBTree:
             else:
                 self.root.make_black()
        
+    def __str__(self):
         if self.is_empty():
             return "[]"
         return "[" + self.__str_helper(self.root) + "]"
