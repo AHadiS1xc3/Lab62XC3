@@ -52,35 +52,34 @@ class RBNode:
     def rotate_right(self):
         x = self.left
         self.left = x.right
-        if x.right is not None:
+        if x.right != None:
             x.right.parent = self
         x.parent = self.parent
-        if self.is_left_child():
-            self.parent.left = x
-        if self.is_right_child():
+        if self.parent==None:
+            self.parent=x
+        if self.is_right_child() :
             self.parent.right = x
+        elif self.is_left_child() :
+            self.parent.left = x
         x.right = self
         self.parent = x
-        x.colour=self.colour
-        self.colour="R"
-        return x
-    
+        
     def rotate_left(self):
         x = self.right
         self.right = x.left
-        if x.right is not None:
-            x.right.parent = self
+        if x.left != None:
+            x.left.parent = self
         x.parent = self.parent
-        if self.is_left_child():
+        if self.parent == None :                           
+            self.parent=x 
+        elif self.is_left_child() :
             self.parent.left = x
-        if self.is_right_child():
+        elif self.is_right_child():
             self.parent.right = x
         x.left = self
         self.parent = x
-        x.colour=self.colour
-        self.colour="R"
-        return x
- 
+        
+
 class RBTree:
     def __init__(self):
         self.root = None
@@ -120,35 +119,47 @@ class RBTree:
                 self.fix(node.right)
             else:
                 self.__insert(node.right, value)
-    
+        
     def fix(self, node):
         # fixing until we reach the root or a black node with a red parent
         while node != None and node.parent != None and node.parent.is_red():
-            # Parent's brother is red
-            if node.get_uncle() != None and node.get_uncle().is_red():
+
+            # uncle is black and node is a right child
+            if node.parent.is_right_child() and node.uncle_is_black():
+                # node is left child, set node to parent and rotate right
+                if node.is_left_child():
+                    node = node.parent
+                    node.rotate_right()
+                #make make parent black, grandparent red
+                node.parent.make_black()
+                node.parent.parent.make_red()
+                #then rotate grand parent left
+                node.parent.parent.rotate_left()
+
+            # uncle is black and node is a left child
+            elif node.parent.is_left_child() and node.uncle_is_black():
+                if node.is_right_child():
+                    # then we need to set node to it parent and rotate left
+                    node = node.parent
+                    node.rotate_left()
+                # then they line up, we mark parent black and grand parent red(no red adjecent)
+                node.parent.make_black()
+                node.parent.parent.make_red()
+                #then node.grandparent needs to rotate right(path has same number of black node)
+                node.parent.parent.rotate_right()
+            elif node.get_uncle().is_red():
+                #make both parent and uncle black, make grand parent right
                 node.parent.make_black()
                 node.get_uncle().make_black()
                 node.parent.parent.make_red()
                 node = node.parent.parent
+                
+        # keep going up until we reach the root and update the root 
+        while self.root.parent != None:
+            self.root = self.root.parent
+        # recoloring the node to blcak
+        self.root.make_black()
 
-            # Parent's brother is black and node is a right child
-            elif node.is_right_child() and node.uncle_is_black():
-                node = node.parent
-                node.rotate_left()
-
-            # Parent's brother is black and node is a left child
-            elif node.is_left_child() and node.uncle_is_black():
-                node.parent.make_black()
-                node.parent.parent.make_red()
-                node.rotate_right()
-
-        # recoloring the root to black
-        if node == None or node.parent == None:
-            if node != None:
-                node.make_black()
-            else:
-                self.root.make_black()
-       
     def __str__(self):
         if self.is_empty():
             return "[]"
@@ -163,17 +174,153 @@ class RBTree:
             return "[" +  self.__str_helper(node.left) + " <- " + str(node) + "]"
         return "[" + self.__str_helper(node.left) + " <- " + str(node) + " -> " + self.__str_helper(node.right) + "]"
 
+"""
+Documentation of printEverything():
+
+Inputs:
+
+    node: This is the node you want to print. Note that you will not print the parents of this node
+          only its subtrees
+
+    space: This defines how much space in terms of width you allow the string representation of the tree
+           to have
+
+    depth: The value is number branch level you want to in the string representation of the tree
+
+
+    width: The corresponds the number of newline characters that are inserted between consectutive branch levels.
+
+"""
+def printEverything(node:RBNode, space,depth,width=1) -> str:
+    def filter (lst,left=False):
+        if lst == None or len(lst) == 0 :
+            return " "*(space//2)
+        else:
+            return lst.pop(0)
+
+    if depth == 0 :
+        if (node == None):
+            str_ = str("").center(space, ' ') + "\n"
+        else:
+             str_ = str(node).center(space, ' ') + "\n"
+
+           
+        return str_
+    elif depth > 0 and node == None:
+
+        left  = printEverything (node,space//2,depth-1,width )
+        right = printEverything (node,space//2,depth-1,width )
+
+
+        left_lst = left.split("\n")
+        right_lst = right.split("\n")
+        right_left = []
+        lst_app = []
+        while(len(right_lst) >0 or len(left_lst) >0):
+            right_left.append(filter(left_lst,left=True) +filter(right_lst)+ "\n")
+
+        if len(right_lst) == 0 and len(left_lst) != 0 :
+            lst_app = left_lst
+        elif len (left_lst) == 0 and len(right_lst) != 0 :
+            lst_app = right_lst
+        else:
+            lst_app =  []   
+
+        
+        str_ = str(" ").center(space,' ') + "\n"*width
+        for s in right_left:
+            str_ += s
+
+        str_split = str_.split("\n")
+        trans_str = ""
+        for s in str_split:
+            elm = " "*0+ s +"\n"
+            trans_str += elm
+
+        return trans_str
+        
+
+    else:
+        left_lst = None
+        right_lst = None
+        
+        left       = printEverything (node.left,space//2,depth-1,width )
+        left_lst   = left.split("\n")
+        
+        right = printEverything (node.right,space//2,depth - 1,width)
+        right_lst  = right.split("\n")
+        right_left = []
+        lst_app = []
+
+        if (left_lst != None and right_lst != None): 
+            while(len(right_lst) >0 or len(left_lst) >0):
+                right_left.append(filter(left_lst,left=True) +filter(right_lst)+ "\n")
+            if len(right_lst) == 0 and len(left_lst) != 0 :
+                    lst_app = left_lst
+            elif len (left_lst) == 0 and len(right_lst) != 0 :
+                    lst_app = right_lst
+            else:
+                lst_app =  []   
+        else:
+            if right_lst != None:
+                right_left.append(" "*(space//2)+filter(right_lst)+ "\n")
+
+            else:
+                right_left.append(filter(left_lst) + " "*(space//2))
+
+        right_left += lst_app  
+        str_ = str(node).center(space,' ') + "\n"*width
+        for s in right_left:
+            str_ += s
+
+        str_split = str_.split("\n")
+        trans_str = ""
+        for s in str_split:
+            elm = " "*0+ s +"\n"
+            trans_str += elm
+
+        return trans_str
+
+
+"""
+Documentation of translate():
+
+    string: the string you want to shift right 
+
+    spaces: the number of spaces you want to shift the string right by 
+"""
+def translate(string , spaces):
+
+    lst_str = string.split("\n")
+
+    str_ = ""
+
+    for s in lst_str:
+        str_ += " "*spaces + s + "\n"
+
+    return str_
+    
 tree = RBTree()
-print(tree)
 tree.insert(4)
-print(tree)
 tree.insert(1)
-print(tree)
 tree.insert(3)
-print(tree)
 tree.insert(6)
-print(tree)
 tree.insert(8)
-print(tree)
 tree.insert(0)
 print(tree)
+a=printEverything(tree.root,4,4,4)
+print(a)
+
+tree2 = RBTree()
+tree2.insert(5)
+tree2.insert(2)
+tree2.insert(8)
+tree2.insert(1)
+tree2.insert(4)
+tree2.insert(6)
+tree2.insert(9)
+tree2.insert(3)
+tree2.insert(7)
+print(tree2)
+a=printEverything(tree2.root,4,4,4)
+print(a)
