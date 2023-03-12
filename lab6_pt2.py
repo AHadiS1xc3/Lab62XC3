@@ -38,10 +38,24 @@ class XC3Tree:
     def num_nodes(self):
         return self.root.num_nodes()
 
-#------------------testing---------------------
-tree = XC3Tree(4)
-print(tree.degree)   # output: 4
-print(tree.height()) # output: 2
-print(tree.num_nodes()) # output: 8
-for child in tree.root.children:
-    print(child.degree())
+#-----------------------Experiment 4------------------------
+#------------------Number of nodes pattern------------------
+#fibonacci recursive Implementation
+def fibonacci(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return fibonacci(n-1) + fibonacci(n-2)
+        
+# running for loop from 0 to 25     
+for i in range(26):
+    tree = XC3Tree(i)
+    current_node=tree.num_nodes()
+    fibonacci_i=fibonacci(i+2)
+    # i XC-tree nodes number is equal to (i+2)th fibonacci
+    print(i," XC-3 Tree nodes: ",current_node)
+    print(i+2, "th Fibonacci number: ",fibonacci_i)
+
+# equation: nodes(i) = fib(i+2)
