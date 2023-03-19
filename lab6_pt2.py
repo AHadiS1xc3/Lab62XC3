@@ -61,7 +61,7 @@ for i in range(26):
     print(i+2, "th Fibonacci number: ",fibonacci_i)
 
 # equation: nodes(i) = fib(i+2)
-
+# -----------------Argument on height bound---------------
 def test_tree_height():
     for i in range(26):
         tree = XC3Tree(i)
